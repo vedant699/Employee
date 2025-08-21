@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Employee Registration System</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); margin:0; padding:20px; min-height:100vh; }
+    .container { max-width: 800px; margin: 0 auto; background:#fff; border-radius:15px; box-shadow:0 20px 40px rgba(0,0,0,0.1); overflow:hidden; }
+    form { padding:30px; }
+    .form-header { text-align:center; margin-bottom:30px; padding-bottom:20px; border-bottom:2px solid #f0f0f0; }
+    .form-header h2 { color:#333; margin:0 0 10px; font-size:28px; font-weight:600; }
+    .form-header p { color:#666; margin:0; font-size:16px; }
+    .form-section { margin-bottom:30px; padding:20px; background:#f8f9fa; border-radius:10px; border-left:4px solid #4CAF50; }
+    .form-section h3 { margin:0 0 20px; color:#333; font-size:18px; font-weight:600; }
+    .form-group { margin-bottom:20px; }
+    .form-group label { display:block; margin-bottom:8px; font-weight:600; color:#333; font-size:14px; }
+    .form-group input,.form-group select { width:100%; padding:12px 15px; border:2px solid #e1e5e9; border-radius:8px; font-size:16px; transition:all .3s; background:#fff; }
+    .form-group input:focus,.form-group select:focus { outline:none; border-color:#4CAF50; box-shadow:0 0 0 3px rgba(76,175,80,.1); }
+    .error-message { color:#d32f2f; font-size:12px; margin-top:5px; display:block; }
+
+    /* Photo upload */
+    .photo-upload{border:2px dashed #4CAF50;border-radius:8px;padding:20px;text-align:center;background:#f8f9fa;cursor:pointer;transition:all .3s;}
+    .photo-upload:hover{border-color:#45a049;background:#e8f5e8;}
+    .photo-upload input[type=file]{display:none;}
+    .photo-upload-icon{font-size:48px;color:#4CAF50;margin-bottom:10px;}
+    .photo-upload-text{color:#666;font-size:14px;}
+    .photo-preview{margin-top:15px;display:none;}
+    .photo-preview img{width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #4CAF50;box-shadow:0 4px 12px rgba(0,0,0,.1);}
+    .remove-photo{margin-top:10px;background:#d32f2f;color:#fff;border:0;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;}
+
+    .submit-btn{width:100%;padding:15px;background:linear-gradient(135deg,#4CAF50,#45a049);color:#fff;border:0;border-radius:8px;font-size:18px;font-weight:600;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(76,175,80,.3);}
+    .submit-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;box-shadow:none;}
+    .btn-loading{display:flex;align-items:center;justify-content:center;gap:10px;}
+    .spinner{width:20px;height:20px;border:2px solid #fff;border-top:2px solid transparent;border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+    .loading-message{text-align:center;padding:20px;color:#666;}
+    .loading-message .spinner{border-color:#4CAF50;border-top-color:transparent;margin:0 auto 10px;}
+    .error-message.block{background:#ffebee;color:#d32f2f;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid #d32f2f;}
+
+    .thank-you-section{display:none;padding:30px;text-align:center;}
+    .success-header{margin-bottom:30px;}
+    .success-icon{width:60px;height:60px;background:#4CAF50;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 20px;}
+    .success-header h2{color:#333;margin:0 0 10px;font-size:24px;}
+    .success-header p{color:#666;margin:0;}
+
+    .card-container{max-width:400px;margin:0 auto;}
+    .card-box{background:#fff;border:2px solid #e1e5e9;border-radius:15px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,.1);margin-bottom:20px;position:relative;overflow:hidden;}
+    .card-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#4CAF50,#45a049);}
+    .card-header{text-align:center;margin-bottom:20px;}
+    .company-logo{width:80px;height:80px;object-fit:contain;margin-bottom:10px;border-radius:8px;}
+    .company-name{font-size:18px;font-weight:600;color:#333;margin-bottom:5px;}
+    .employee-photo-section{text-align:center;margin-bottom:20px;}
+    .employee-photo{width:100px;height:100px;margin:0 auto;border-radius:50%;overflow:hidden;border:3px solid #4CAF50;}
+    .employee-photo img{width:100%;height:100%;object-fit:cover;}
+    .employee-info{background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:20px;}
+    .info-line{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:14px;}
+    .info-line:last-child{margin-bottom:0;}
+    .info-label{font-weight:600;color:#666;min-width:100px;}
+    .info-value{font-weight:500;color:#333;text-align:right;flex:1;}
+    .qr-section{text-align:center;padding:15px;background:#f8f9fa;border-radius:8px;margin-bottom:20px;}
+    .qr-title{font-weight:600;color:#333;margin-bottom:10px;}
+    #qrcode{border:2px solid #e1e5e9;border-radius:8px;background:#fff;display:block;margin:0 auto;}
+    .unique-id{font-family:'Courier New',monospace;font-size:12px;color:#666;margin-top:10px;background:#e9ecef;padding:5px 10px;border-radius:4px;display:inline-block;}
+    .card-footer{text-align:center;padding-top:15px;border-top:1px solid #e1e5e9;}
+    .office-address{font-size:12px;color:#666;line-height:1.4;}
+    .card-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    .action-btn{padding:12px 20px;border:0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:8px;min-width:120px;justify-content:center;}
+    .print-btn{background:#2196F3;color:#fff}.print-btn:hover{background:#1976D2;transform:translateY(-2px)}
+    .download-btn{background:#4CAF50;color:#fff}.download-btn:hover{background:#45a049;transform:translateY(-2px)}
+    .new-btn{background:#FF9800;color:#fff}.new-btn:hover{background:#F57C00;transform:translateY(-2px)}
+    .btn-icon{font-size:16px}
+
+    @media (max-width:768px){body{padding:10px}.container{border-radius:10px}form{padding:20px}.form-section{padding:15px}.card-box{padding:20px}.card-actions{flex-direction:column}.action-btn{width:100%}.info-line{flex-direction:column;align-items:flex-start;gap:5px}.info-value{text-align:left}}
+    @media (max-width:480px){.form-header h2{font-size:24px}.card-box{padding:15px}.employee-photo{width:80px;height:80px}#qrcode{width:256px;height:256px}}
+    @media print{body{background:#fff;padding:0}.container{box-shadow:none;border-radius:0}form,.card-actions,.success-header{display:none !important}.thank-you-section{display:block !important;padding:0}.card-box{box-shadow:none;border:2px solid #000;page-break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <form id="userForm">
+      <div class="form-header">
+        <h2>Employee Registration Form</h2>
+        <p>Please fill in all required fields to generate your Employee ID Card</p>
+      </div>
+
+      <div class="form-section">
+        <h3>Personal Information</h3>
+
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="Name" required placeholder="Enter your full name" />
+          <span class="error-message" id="nameError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Gender *</label>
+          <select id="gender" name="Gender" required>
+            <option value="">Select Gender</option>
+            <option>Male</option><option>Female</option><option>Other</option>
+          </select>
+          <span class="error-message" id="genderError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" name="Email" required placeholder="Enter your email address" />
+          <span class="error-message" id="emailError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number *</label>
+          <input type="tel" id="phone" name="Phone" required pattern="[0-9]{10}" placeholder="Enter 10-digit phone number" />
+          <span class="error-message" id="phoneError"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Profile Photo</label>
+          <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+            <div class="photo-upload-icon">📷</div>
+            <div class="photo-upload-text">Click to upload profile photo</div>
+            <input type="file" id="photoInput" name="Photo" accept="image/*" onchange="previewImage(this)" />
+          </div>
+          <div class="photo-preview" id="photoPreview">
+            <img id="previewImg" alt="Preview" />
+            <br />
+            <button type="button" class="remove-photo" onclick="removePhoto()">Remove Photo</button>
+          </div>
+          <span class="error-message" id="photoError"></span>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" class="submit-btn">
+        <span class="btn-text">Generate Employee ID Card</span>
+        <span class="btn-loading" style="display:none">
+          <div class="spinner"></div> Processing...
+        </span>
+      </button>
+
+      <div id="loadingMsg" class="loading-message" style="display:none">
+        <div class="spinner"></div>
+        <p>Processing your registration...</p>
+      </div>
+
+      <div id="errorMsg" class="error-message block" style="display:none"></div>
+    </form>
+
+    <div id="thankYouSection" class="thank-you-section">
+      <div class="success-header">
+        <div class="success-icon">✓</div>
+        <h2>Registration Successful!</h2>
+        <p>Your Employee ID Card has been generated successfully.</p>
+      </div>
+
+      <div class="card-container">
+        <div class="card-box" id="employeeCard">
+          <div class="card-header">
+            <img src="https://i.ibb.co/SfwR7CW/hackhunt-thumbnail.jpg" alt="Company Logo" class="company-logo" />
+            <div class="company-name">HackHunt</div>
+          </div>
+
+          <div class="employee-photo-section">
+            <div class="employee-photo">
+              <img id="photoDisplay" alt="Employee Photo"
+                   src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik01MCAyNUMzNi4xOTI5IDI1IDI4IDMzLjE5MjkgMjggNTBDMjggNjYuODA3MSAzNi4xOTI5IDc1IDUwIDc1QzYzLjgwNzEgNzUgNzIgNjYuODA3MSA3MiA1MEM3MiAzMy4xOTI5IDYzLjgwNzEgMjUgNTAgMjVaIiBmaWxsPSIjQ0NDIi8+CjxwYXRoIGQ9Ik0yOCA4NUMyOCA2OC4xOTI5IDM2LjE5MjkgNjAgNTAgNjBDNjMuODA3MSA2MCA3MiA2OC4xOTI5IDcyIDg1SDI4WiIgZmlsbD0iI0NDQyIvPgo8L3N2Zz4K" />
+            </div>
+          </div>
+
+          <div class="employee-info">
+            <div class="info-line"><span class="info-label">Name:</span><span class="info-value" id="cardName"></span></div>
+            <div class="info-line"><span class="info-label">Gender:</span><span class="info-value" id="cardGender"></span></div>
+            <div class="info-line"><span class="info-label">Email:</span><span class="info-value" id="cardEmail"></span></div>
+            <div class="info-line"><span class="info-label">Phone:</span><span class="info-value" id="cardPhone"></span></div>
+          </div>
+
+          <div class="qr-section">
+            <div class="qr-title">Scan QR Code</div>
+            <canvas id="qrcode" width="256" height="256"></canvas>
+            <div class="unique-id" id="uniqueID"></div>
+          </div>
+
+          <div class="card-footer">
+            <div class="office-address">
+              <strong>Office Address:</strong><br />
+              Shree Surati Modh Vanik Samaj Wadi<br />
+              Shanti Sagar Society, Near Saurabh Police Chowki,<br />
+              Adajan, Pal, Surat, Gujarat
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button id="printCard" class="action-btn print-btn"><span class="btn-icon">🖨️</span> Print ID Card</button>
+          <button id="downloadCard" class="action-btn download-btn"><span class="btn-icon">📥</span> Download Card</button>
+          <button id="newRegistration" class="action-btn new-btn"><span class="btn-icon">➕</span> New Registration</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('userForm');
+    const thankYou = document.getElementById('thankYouSection');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingMsg = document.getElementById('loadingMsg');
+    const errorMsg = document.getElementById('errorMsg');
+    let uploadedPhoto = null;
+
+    const validators = {
+      Name: v => v.trim().length >= 2 ? null : 'Name must be at least 2 characters long',
+      Phone: v => /^[0-9]{10}$/.test(v) ? null : 'Please enter a valid 10-digit phone number',
+      Email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : 'Please enter a valid email address',
+      Gender: v => v ? null : 'Please select your gender'
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      addFormValidation();
+      const phoneInput = document.querySelector('input[name="Phone"]');
+      phoneInput.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9]/g,'').slice(0,10); });
+      document.getElementById('printCard').addEventListener('click', () => window.print());
+      document.getElementById('downloadCard').addEventListener('click', downloadCard);
+      document.getElementById('newRegistration').addEventListener('click', resetForm);
+    });
+
+    function addFormValidation() {
+      form.querySelectorAll('input,select').forEach(inp => {
+        inp.addEventListener('blur', () => validateField(inp));
+        inp.addEventListener('input', () => clearFieldError(inp));
+      });
+    }
+    function validateField(field) {
+      const validator = validators[field.name];
+      if (!validator) return;
+      const err = validator(field.value);
+      if (err) showFieldError(field, err); else clearFieldError(field);
+    }
+    function showFieldError(field, message) {
+      const el = document.getElementById(field.name + 'Error');
+      if (el) { el.textContent = message; el.style.display = 'block'; field.style.borderColor = '#d32f2f'; }
+    }
+    function clearFieldError(field) {
+      const el = document.getElementById(field.name + 'Error');
+      if (el) { el.textContent=''; el.style.display='none'; field.style.borderColor = '#e1e5e9'; }
+    }
+    function validateForm() {
+      let ok = true;
+      form.querySelectorAll('input[required],select[required]').forEach(inp => {
+        validateField(inp);
+        const el = document.getElementById(inp.name + 'Error');
+        if (el && el.style.display === 'block') ok = false;
+      });
+      return ok;
+    }
+
+    function previewImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('File size should be less than 5MB'); input.value=''; return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        uploadedPhoto = e.target.result;
+        document.getElementById('previewImg').src = uploadedPhoto;
+        document.getElementById('photoPreview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+    function removePhoto() {
+      uploadedPhoto = null;
+      document.getElementById('photoInput').value = '';
+      document.getElementById('photoPreview').style.display = 'none';
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!validateForm()) return;
+
+      const btnText = submitBtn.querySelector('.btn-text');
+      const btnLoading = submitBtn.querySelector('.btn-loading');
+      submitBtn.disabled = true; btnText.style.display='none'; btnLoading.style.display='flex';
+      loadingMsg.style.display='block'; errorMsg.style.display='none';
+
+      const formData = {};
+      new FormData(form).forEach((v,k) => { if (k !== 'Photo') formData[k] = String(v).trim(); });
+      const timestamp = new Date().toISOString();
+      const uniqueId = 'EMP-' + Date.now() + '-' + Math.random().toString(36).substr(2,5).toUpperCase();
+      formData.Timestamp = timestamp; formData.UniqueID = uniqueId;
+
+      if (google && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(resp => handleSuccess(resp, formData, uniqueId))
+          .withFailureHandler(err => handleError('Registration failed: ' + err.message))
+          .processForm(formData);
+      } else {
+        setTimeout(() => handleSuccess('Success', formData, uniqueId), 800);
+      }
+    });
+
+    function handleSuccess(response, formData, uniqueId) {
+      if (response !== 'Success') return handleError('Registration failed. Please try again.');
+      form.style.display='none';
+      thankYou.style.display='block';
+      document.getElementById('cardName').textContent = formData.Name;
+      document.getElementById('cardGender').textContent = formData.Gender;
+      document.getElementById('cardEmail').textContent = formData.Email;
+      document.getElementById('cardPhone').textContent = formData.Phone;
+      document.getElementById('uniqueID').textContent = 'ID: ' + uniqueId;
+      if (uploadedPhoto) document.getElementById('photoDisplay').src = uploadedPhoto;
+      generateQRCode(uniqueId, formData);
+      thankYou.scrollIntoView({behavior:'smooth'});
+    }
+
+    function handleError(message) {
+      const btnText = submitBtn.querySelector('.btn-text');
+      const btnLoading = submitBtn.querySelector('.btn-loading');
+      submitBtn.disabled = false; btnText.style.display='block'; btnLoading.style.display='none';
+      loadingMsg.style.display='none'; errorMsg.textContent = message; errorMsg.style.display='block';
+    }
+
+    function generateQRCode(uniqueId, formData) {
+      const canvas = document.getElementById('qrcode');
+      const useAppsScript = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (useAppsScript) {
+        google.script.run.withSuccessHandler(function(webAppUrl){
+          const redirectUrl = `${webAppUrl}?page=thank-you&id=${uniqueId}&name=${encodeURIComponent(formData.Name)}`;
+          try {
+            new QRious({ element: canvas, value: redirectUrl, size: 256, padding: 16, background:'#ffffff', foreground:'#000000', level:'H' });
+          } catch (e) {
+            console.error('QR gen failed:', e);
+            canvas.parentElement.innerHTML = '<div style="color:#d32f2f;font-size:12px;">QR Code generation failed</div>';
+          }
+        }).getWebAppUrl();
+      } else {
+        const baseUrl = window.location.href.split('?')[0];
+        const redirectUrl = `${baseUrl}?page=thank-you&id=${uniqueId}&name=${encodeURIComponent(formData.Name)}`;
+        new QRious({ element: canvas, value: redirectUrl, size: 256, padding: 16, background:'#ffffff', foreground:'#000000', level:'H' });
+      }
+    }
+
+    function downloadCard() {
+      const card = document.getElementById('employeeCard');
+      if (typeof html2canvas !== 'undefined') {
+        html2canvas(card).then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'employee-id-card.png';
+          link.href = canvas.toDataURL(); link.click();
+        });
+      } else { window.print(); }
+    }
+
+    function resetForm() {
+      form.reset();
+      form.style.display='block';
+      thankYou.style.display='none';
+      uploadedPhoto = null;
+      document.getElementById('photoPreview').style.display = 'none';
+      form.querySelectorAll('input,select').forEach(i => i.style.borderColor = '#e1e5e9');
+      document.getElementById('photoDisplay').src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik01MCAyNUMzNi4xOTI5IDI1IDI4IDMzLjE5MjkgMjggNTBDMjggNjYuODA3MSAzNi4xOTI5IDc1IDUwIDc1QzYzLjgwNzEgNzUgNzIgNjYuODA3MSA3MiA1MEM3MiAzMy4xOTI5IDYzLjgwNzEgMjUgNTAgMjVaIiBmaWxsPSIjQ0NDIi8+CjxwYXRoIGQ9Ik0yOCA4NUMyOCA2OC4xOTI5IDM2LjE5MjkgNjAgNTAgNjBDNjMuODA3MSA2MCA3MiA2OC4xOTI5IDcyIDg1SDI4WiIgZmlsbD0iI0NDQyIvPgo8L3N2Zz4K';
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  </script>
+</body>
+</html>

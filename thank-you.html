@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thank You - Employee Registration</title>
+  <style>
+    body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); margin:0; padding:20px; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    .container { background:#fff; border-radius:15px; padding:40px; text-align:center; max-width:520px; box-shadow:0 20px 40px rgba(0,0,0,.1); }
+    .success-icon { width:80px; height:80px; background:#4CAF50; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px; margin:0 auto 24px; }
+    h1{color:#333;margin:0 0 10px}.subtitle{color:#666;margin:0 0 20px}
+    .info-box{background:#f8f9fa;padding:18px;border-radius:10px;margin:18px 0;border-left:4px solid #4CAF50;text-align:left}
+    .office-address{background:#e8f5e8;padding:18px;border-radius:10px;margin:18px 0;text-align:left}
+    .back-btn{background:#4CAF50;color:#fff;padding:12px 24px;border:0;border-radius:8px;font-size:16px;cursor:pointer;text-decoration:none;display:inline-block;margin-top:16px}
+    .kv{margin:8px 0}.k{color:#555;font-weight:600}.v{color:#222}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="success-icon">✓</div>
+    <h1>Thank You!</h1>
+    <p class="subtitle">Your employee registration has been successfully processed.</p>
+
+    <div class="info-box">
+      <div class="kv"><span class="k">ID:</span> <span class="v" id="employeeId">Loading...</span></div>
+      <div class="kv"><span class="k">Name:</span> <span class="v" id="employeeName">Loading...</span></div>
+    </div>
+
+    <div class="office-address">
+      <h3>Office Address</h3>
+      <p>
+        <strong>Shree Surati Modh Vanik Samaj Wadi</strong><br />
+        Shanti Sagar Society, Near Saurabh Police Chowki,<br />
+        Adajan, Pal, Surat, Gujarat
+      </p>
+    </div>
+
+    <a href="?page=index" class="back-btn">Back to Registration</a>
+  </div>
+
+  <script>
+    function setInfo(id, name) {
+      if (id) document.getElementById('employeeId').textContent = id;
+      if (name) document.getElementById('employeeName').textContent = decodeURIComponent(name);
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      if (typeof google !== 'undefined' && google.script && google.script.url) {
+        google.script.url.getLocation(function(loc){
+          const id = loc && loc.parameter ? loc.parameter.id : null;
+          const name = loc && loc.parameter ? loc.parameter.name : null;
+          setInfo(id, name);
+        });
+      } else {
+        const qs = new URLSearchParams(window.location.search);
+        setInfo(qs.get('id'), qs.get('name'));
+      }
+    });
+  </script>
+</body>
+</html>
